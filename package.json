@@ -1,0 +1,12 @@
+{
+  "name": "active-therapy-sim",
+  "version": "1.0.0",
+  "private": true,
+  "description": "SENSORA distributed therapy simulator — BIOE 107 Team 2",
+  "scripts": {
+    "install:all": "cd server && npm install && cd ../patient-sim && npm install && cd ../nurse-dashboard && npm install",
+    "dev:server": "cd server && npm start",
+    "dev:patient": "cd patient-sim && npm run dev",
+    "dev:nurse": "cd nurse-dashboard && npm run dev"
+  }
+}

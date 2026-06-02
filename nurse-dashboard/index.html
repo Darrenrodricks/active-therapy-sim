@@ -1,0 +1,67 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#0e1419" />
+    <title>SENSORA — Nurse Station</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Inter:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      :root {
+        color-scheme: dark;
+
+        /* Dashboard palette — clinical, high contrast, with a single warm accent for alerts */
+        --bg-base: #0e1419;
+        --bg-elev: #161d24;
+        --bg-card: #1c252e;
+        --bg-overlay: rgba(28, 37, 46, 0.95);
+
+        --border: #2a3540;
+        --border-bright: #3d4a57;
+
+        --text-primary: #e6edf3;
+        --text-secondary: #8b98a5;
+        --text-tertiary: #5a6673;
+
+        --ok: #4ade80;
+        --warn: #fbbf24;
+        --crit: #ef4444;
+        --info: #60a5fa;
+      }
+
+      html, body, #root {
+        margin: 0;
+        padding: 0;
+        height: 100%;
+        width: 100%;
+        background: var(--bg-base);
+        font-family: 'Inter', system-ui, sans-serif;
+        color: var(--text-primary);
+        -webkit-font-smoothing: antialiased;
+      }
+
+      ::-webkit-scrollbar { width: 8px; height: 8px; }
+      ::-webkit-scrollbar-track { background: transparent; }
+      ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
+      ::-webkit-scrollbar-thumb:hover { background: var(--border-bright); }
+
+      @keyframes alertPulse {
+        0%, 100% { background: rgba(239, 68, 68, 0.08); }
+        50%      { background: rgba(239, 68, 68, 0.18); }
+      }
+
+      .alert-flashing {
+        animation: alertPulse 1.4s ease-in-out infinite;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.jsx"></script>
+  </body>
+</html>

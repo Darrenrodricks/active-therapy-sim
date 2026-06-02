@@ -1,0 +1,7 @@
+{
+  "name": "@sensora/shared",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Shared event types and constants used by server and both clients."
+}
