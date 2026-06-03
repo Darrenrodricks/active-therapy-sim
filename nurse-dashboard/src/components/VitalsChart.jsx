@@ -8,7 +8,6 @@ import {
   ReferenceArea,
   Tooltip,
 } from 'recharts';
-import { VITALS_THRESHOLDS } from '../../../shared/constants/thresholds.js';
 
 /**
  * Format a vitals sample for Recharts. We use the seconds-ago value as the x
@@ -24,99 +23,91 @@ function prepData(vitalsLog) {
   }));
 }
 
-export function VitalsChart({ vitalsLog }) {
+const CHART_MARGIN = { top: 8, right: 16, left: 0, bottom: 4 };
+
+export function VitalsChart({ vitalsLog, dataKey, stroke, name, unit, label, domain, ticks, bands, showXAxis }) {
   const data = prepData(vitalsLog);
-  const t = VITALS_THRESHOLDS.heartRate;
 
   return (
-    <div style={{ width: '100%', height: '100%', minHeight: 280 }}>
-      <ResponsiveContainer>
-        <LineChart
-          data={data}
-          margin={{ top: 16, right: 24, left: 0, bottom: 8 }}
-        >
-          <CartesianGrid
-            stroke="#2a3540"
-            strokeDasharray="2 4"
-            vertical={false}
-          />
+    <div style={{ display: 'flex', flexDirection: 'column', flex: 1, minHeight: 0 }}>
+      <div
+        style={{
+          fontSize: 10,
+          fontFamily: 'JetBrains Mono, monospace',
+          color: stroke,
+          padding: '4px 0 2px 40px',
+          letterSpacing: '0.08em',
+          textTransform: 'uppercase',
+          opacity: 0.85,
+        }}
+      >
+        {label}
+      </div>
+      <div style={{ flex: 1, minHeight: 0 }}>
+        <ResponsiveContainer width="100%" height="100%">
+          <LineChart data={data} margin={CHART_MARGIN}>
+            <CartesianGrid stroke="#2a3540" strokeDasharray="2 4" vertical={false} />
 
-          {/* Threshold bands behind the line, so you can read where vitals are
-              clinically without needing a legend. */}
-          <ReferenceArea
-            y1={t.resting.min}
-            y2={t.resting.max}
-            fill="#4ade80"
-            fillOpacity={0.06}
-            ifOverflow="extendDomain"
-          />
-          <ReferenceArea
-            y1={t.elevated.min}
-            y2={t.elevated.max}
-            fill="#fbbf24"
-            fillOpacity={0.06}
-            ifOverflow="extendDomain"
-          />
-          <ReferenceArea
-            y1={t.critical.min}
-            y2={t.critical.max}
-            fill="#ef4444"
-            fillOpacity={0.06}
-            ifOverflow="extendDomain"
-          />
+            {bands.map((band, i) => (
+              <ReferenceArea
+                key={i}
+                y1={band.min}
+                y2={band.max}
+                fill={band.fill}
+                fillOpacity={0.06}
+                ifOverflow="extendDomain"
+              />
+            ))}
 
-          <XAxis
-            dataKey="secondsAgo"
-            type="number"
-            domain={[-30, 0]}
-            ticks={[-30, -20, -10, 0]}
-            tickFormatter={(v) => (v === 0 ? 'now' : `${v}s`)}
-            stroke="#5a6673"
-            tick={{ fill: '#8b98a5', fontSize: 11, fontFamily: 'JetBrains Mono' }}
-            axisLine={{ stroke: '#2a3540' }}
-          />
-          <YAxis
-            domain={[40, 140]}
-            ticks={[40, 60, 80, 100, 120, 140]}
-            stroke="#5a6673"
-            tick={{ fill: '#8b98a5', fontSize: 11, fontFamily: 'JetBrains Mono' }}
-            axisLine={{ stroke: '#2a3540' }}
-            width={36}
-          />
+            <XAxis
+              dataKey="secondsAgo"
+              type="number"
+              domain={[-30, 0]}
+              ticks={[-30, -20, -10, 0]}
+              tickFormatter={showXAxis ? (v) => (v === 0 ? 'now' : `${v}s`) : () => ''}
+              stroke="#5a6673"
+              tick={{
+                fill: showXAxis ? '#8b98a5' : 'transparent',
+                fontSize: 11,
+                fontFamily: 'JetBrains Mono',
+              }}
+              axisLine={{ stroke: '#2a3540' }}
+              height={showXAxis ? 20 : 6}
+            />
+            <YAxis
+              domain={domain}
+              ticks={ticks}
+              stroke="#5a6673"
+              tick={{ fill: '#8b98a5', fontSize: 11, fontFamily: 'JetBrains Mono' }}
+              axisLine={{ stroke: '#2a3540' }}
+              width={36}
+            />
 
-          <Tooltip
-            contentStyle={{
-              background: '#1c252e',
-              border: '1px solid #3d4a57',
-              borderRadius: 8,
-              fontFamily: 'JetBrains Mono, monospace',
-              fontSize: 12,
-            }}
-            labelStyle={{ color: '#8b98a5' }}
-            labelFormatter={(v) => (v === 0 ? 'now' : `${v}s ago`)}
-          />
+            <Tooltip
+              contentStyle={{
+                background: '#1c252e',
+                border: '1px solid #3d4a57',
+                borderRadius: 8,
+                fontFamily: 'JetBrains Mono, monospace',
+                fontSize: 12,
+              }}
+              labelStyle={{ color: '#8b98a5' }}
+              labelFormatter={(v) => (v === 0 ? 'now' : `${v}s ago`)}
+              formatter={(value) => [`${value} ${unit}`, name]}
+            />
 
-          <Line
-            type="monotone"
-            dataKey="heartRate"
-            stroke="#60a5fa"
-            strokeWidth={2}
-            dot={false}
-            isAnimationActive={false}
-            name="HR (bpm)"
-          />
-          <Line
-            type="monotone"
-            dataKey="respiration"
-            stroke="#a78bfa"
-            strokeWidth={1.5}
-            dot={false}
-            isAnimationActive={false}
-            name="Resp (br/min)"
-            yAxisId={0}
-          />
-        </LineChart>
-      </ResponsiveContainer>
+            <Line
+              type="monotone"
+              dataKey={dataKey}
+              stroke={stroke}
+              strokeWidth={2}
+              dot={false}
+              isAnimationActive={false}
+              name={name}
+            />
+          </LineChart>
+        </ResponsiveContainer>
+      </div>
     </div>
   );
 }

@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { useSession } from '../state/sessionStore.js';
 import { send } from '../socket/client.js';
 import { THERAPY_STATE } from '../../../shared/types/therapyEvents.js';
+import { VITALS_THRESHOLDS } from '../../../shared/constants/thresholds.js';
 import { SessionStatus } from '../components/SessionStatus.jsx';
 import { VitalsReadout } from '../components/VitalsReadout.jsx';
 import { VitalsChart } from '../components/VitalsChart.jsx';
@@ -186,7 +187,12 @@ export function Dashboard() {
           minWidth: 0, // prevents grid blowout
         }}
       >
-        <VitalsReadout vitals={latestVitals} />
+        <VitalsReadout vitals={
+          therapyState === THERAPY_STATE.RAMP_UP ||
+          therapyState === THERAPY_STATE.ACTIVE
+            ? latestVitals
+            : null
+        } />
 
         <div
           style={{
@@ -230,10 +236,63 @@ export function Dashboard() {
             >
               <Legend color="#60a5fa" label="HR" />
               <Legend color="#a78bfa" label="Resp" />
+              <Legend color="#fb923c" label="Stress" />
             </div>
           </div>
-          <div style={{ flex: 1, minHeight: 0 }}>
-            <VitalsChart vitalsLog={vitalsLog} />
+          <div style={{ flex: 1, minHeight: 0, display: 'flex', flexDirection: 'column', gap: 8 }}>
+            {/* Heart Rate Chart */}
+            <VitalsChart
+              vitalsLog={vitalsLog}
+              dataKey="heartRate"
+              stroke="#60a5fa"
+              name="Heart Rate"
+              unit="bpm"
+              label="Heart Rate (bpm)"
+              domain={[40, 140]}
+              ticks={[40, 60, 80, 100, 120, 140]}
+              bands={[
+                { min: VITALS_THRESHOLDS.heartRate.resting.min,  max: VITALS_THRESHOLDS.heartRate.resting.max,  fill: '#4ade80' },
+                { min: VITALS_THRESHOLDS.heartRate.elevated.min, max: VITALS_THRESHOLDS.heartRate.elevated.max, fill: '#fbbf24' },
+                { min: VITALS_THRESHOLDS.heartRate.critical.min, max: VITALS_THRESHOLDS.heartRate.critical.max, fill: '#ef4444' },
+              ]}
+              showXAxis={false}
+            />
+
+            {/* Respiration Chart */}
+            <VitalsChart
+              vitalsLog={vitalsLog}
+              dataKey="respiration"
+              stroke="#a78bfa"
+              name="Respiration"
+              unit="br/min"
+              label="Respiration (br/min)"
+              domain={[8, 40]}
+              ticks={[8, 12, 18, 24, 32, 40]}
+              bands={[
+                { min: VITALS_THRESHOLDS.respiration.resting.min,  max: VITALS_THRESHOLDS.respiration.resting.max,  fill: '#4ade80' },
+                { min: VITALS_THRESHOLDS.respiration.elevated.min, max: VITALS_THRESHOLDS.respiration.elevated.max, fill: '#fbbf24' },
+                { min: VITALS_THRESHOLDS.respiration.critical.min, max: VITALS_THRESHOLDS.respiration.critical.max, fill: '#ef4444' },
+              ]}
+              showXAxis={false}
+            />
+
+            {/* Stress Index Chart */}
+            <VitalsChart
+              vitalsLog={vitalsLog}
+              dataKey="stress"
+              stroke="#fb923c"
+              name="Stress Index"
+              unit="/100"
+              label="Stress Index (0–100)"
+              domain={[0, 100]}
+              ticks={[0, 25, 50, 75, 100]}
+              bands={[
+                { min: 0,                               max: VITALS_THRESHOLDS.stress.calm,     fill: '#4ade80' },
+                { min: VITALS_THRESHOLDS.stress.calm,   max: VITALS_THRESHOLDS.stress.warning,  fill: '#fbbf24' },
+                { min: VITALS_THRESHOLDS.stress.warning, max: VITALS_THRESHOLDS.stress.critical, fill: '#ef4444' },
+              ]}
+              showXAxis={true}
+            />
           </div>
         </div>
       </main>
