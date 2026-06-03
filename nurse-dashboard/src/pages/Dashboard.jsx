@@ -187,7 +187,12 @@ export function Dashboard() {
           minWidth: 0, // prevents grid blowout
         }}
       >
-        <VitalsReadout vitals={latestVitals} />
+        <VitalsReadout vitals={
+          therapyState === THERAPY_STATE.RAMP_UP ||
+          therapyState === THERAPY_STATE.ACTIVE
+            ? latestVitals
+            : null
+        } />
 
         <div
           style={{
