@@ -6,7 +6,7 @@ import { Lighting } from './Lighting.jsx';
  * The 3D therapy scene. Built into a fixed-position div so the UI overlays
  * float above it cleanly.
  */
-export function Scene({ heartRate, stress, opacity }) {
+export function Scene({ breathScale, stress, opacity }) {
   return (
     <div
       style={{
@@ -25,7 +25,7 @@ export function Scene({ heartRate, stress, opacity }) {
         <Lighting />
         <HaloSphere opacity={opacity} />
         <BreathingSphere
-          heartRate={heartRate}
+          breathScale={breathScale}
           stress={stress}
           opacity={opacity}
         />

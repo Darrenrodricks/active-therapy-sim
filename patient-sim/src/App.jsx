@@ -5,11 +5,17 @@ import { Scene } from './scene/Scene.jsx';
 import { GroundingOverlay } from './ui/GroundingOverlay.jsx';
 import { StartScreen, ExitButton, PauseHint } from './ui/Overlays.jsx';
 import { useRampUp } from './therapy/useRampUp.js';
+import { PATTERNS, DEFAULT_PATTERN } from './therapy/breathingPatterns.js';
+import { useBreathPacer } from './therapy/useBreathPacer.js';
+import { BreathCue } from './ui/BreathCue.jsx';
+import { PaceControls } from './ui/PaceControls.jsx';
 
 export default function App() {
   const [therapyState, setTherapyState] = useState(THERAPY_STATE.IDLE);
   const [vitals, setVitals] = useState({ heartRate: 72, stress: 20 });
   const [connected, setConnected] = useState(false);
+  const [selectedPattern, setSelectedPattern] = useState(DEFAULT_PATTERN);
+  const [paceSpeed, setPaceSpeed] = useState(1.0);
 
   // Connect once on mount.
   useEffect(() => {
@@ -57,6 +63,13 @@ export default function App() {
     therapyState === THERAPY_STATE.RAMP_UP || therapyState === THERAPY_STATE.ACTIVE;
   const opacity = useRampUp(sceneActive);
 
+  // Breathing pacer — only advances while the scene is active.
+  const { phase, phaseProgress, breathScale } = useBreathPacer(
+    PATTERNS[selectedPattern],
+    paceSpeed,
+    sceneActive,
+  );
+
   // Which overlays to show.
   const showStartScreen =
     therapyState === THERAPY_STATE.IDLE ||
@@ -71,7 +84,7 @@ export default function App() {
     <>
       {/* Always render the scene — we control visibility via opacity, not unmount. */}
       <Scene
-        heartRate={vitals.heartRate}
+        breathScale={breathScale}
         stress={vitals.stress}
         opacity={sceneActive ? opacity : 0}
       />
@@ -94,6 +107,17 @@ export default function App() {
       {showSceneControls && (
         <>
           <ExitButton onClick={() => send.endTherapy()} />
+          <BreathCue
+            phase={phase}
+            phaseProgress={phaseProgress}
+            opacity={opacity}
+          />
+          <PaceControls
+            selectedPattern={selectedPattern}
+            onPatternChange={setSelectedPattern}
+            speed={paceSpeed}
+            onSpeedChange={setPaceSpeed}
+          />
           <PauseHint visible={opacity > 0.6} />
         </>
       )}

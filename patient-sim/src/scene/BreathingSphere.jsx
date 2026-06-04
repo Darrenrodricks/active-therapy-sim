@@ -1,37 +1,32 @@
-import { useRef, useMemo } from 'react';
+import { useRef } from 'react';
 import { useFrame } from '@react-three/fiber';
 import { MeshDistortMaterial } from '@react-three/drei';
 import * as THREE from 'three';
 
 /**
  * The breathing sphere. It does three things:
- *  1. Slowly expands and contracts on a sine wave to mimic deep breathing.
- *  2. Pulses faster when the simulated heart rate climbs.
- *  3. Distorts organically, like a slow-moving liquid surface.
+ *  1. Expands and contracts following a guided breathing pacer (breathScale).
+ *  2. Distorts organically, like a slow-moving liquid surface.
+ *  3. Stress drives distortion — calm = smooth, stressed = turbulent.
  *
  * The visual is intentionally soft — no hard edges, no sharp highlights.
  * It should feel like something a person could fall asleep watching.
+ *
+ * The sphere follows the *therapeutic target* pace (from useBreathPacer),
+ * not the patient's current heart rate. The visual is meant to LEAD
+ * breathing down to a calm rate via entrainment, not mirror anxiety.
  */
-export function BreathingSphere({ heartRate = 72, stress = 20, opacity = 1 }) {
+export function BreathingSphere({ breathScale = 0, stress = 20, opacity = 1 }) {
   const meshRef = useRef();
   const materialRef = useRef();
-
-  // Breathing frequency: ~6 breaths/min at rest = ~0.1 Hz. We scale slightly
-  // with heart rate so anxious patients see a faster pulse (which the
-  // ramp-up will then walk down — visual biofeedback).
-  const breathingHz = useMemo(() => {
-    const baseline = 0.1; // 6 cycles/min
-    const hrFactor = Math.max(0.6, Math.min(1.8, heartRate / 72));
-    return baseline * hrFactor;
-  }, [heartRate]);
 
   useFrame((state) => {
     if (!meshRef.current) return;
 
     const t = state.clock.elapsedTime;
 
-    // The expand/contract sine wave. Range is roughly 0.92..1.08 of base scale.
-    const breath = 1 + Math.sin(t * breathingHz * Math.PI * 2) * 0.08;
+    // Map breathScale 0→1 onto the existing scale range: 0.92..1.08 of base.
+    const breath = 0.92 + breathScale * 0.16;
     meshRef.current.scale.setScalar(breath);
 
     // Slow drift rotation so the surface doesn't look static.
